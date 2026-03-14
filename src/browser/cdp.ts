@@ -9,6 +9,14 @@ import {
 } from "./cdp.helpers.js";
 import { assertBrowserNavigationAllowed, withBrowserNavigationPolicy } from "./navigation-guard.js";
 
+export {
+  appendCdpPath,
+  fetchJson,
+  fetchOk,
+  getHeadersWithAuth,
+  isWebSocketUrl,
+} from "./cdp.helpers.js";
+
 /**
  * Sanitize error messages to prevent control character injection in logs.
  * Strips non-printable characters and truncates to reasonable length.
@@ -17,14 +25,6 @@ function sanitizeErrorMessage(err: unknown, maxLen = 200): string {
   const str = String(err).replace(/[\x00-\x1F\x7F-\x9F]/g, "");
   return str.length > maxLen ? `${str.slice(0, maxLen)}...` : str;
 }
-
-export {
-  appendCdpPath,
-  fetchJson,
-  fetchOk,
-  getHeadersWithAuth,
-  isWebSocketUrl,
-} from "./cdp.helpers.js";
 
 export function normalizeCdpWsUrl(wsUrl: string, cdpUrl: string): string {
   const ws = new URL(wsUrl);
