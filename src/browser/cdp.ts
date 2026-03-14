@@ -1,3 +1,4 @@
+import { logWarn } from "../logger.js";
 import type { SsrFPolicy } from "../infra/net/ssrf.js";
 import {
   appendCdpPath,
@@ -166,7 +167,9 @@ export async function evaluateJavaScript(opts: {
   exceptionDetails?: CdpExceptionDetails;
 }> {
   return await withCdpSocket(opts.wsUrl, async (send) => {
-    await send("Runtime.enable").catch(() => {});
+    await send("Runtime.enable").catch((err) => {
+      logWarn(`CDP Runtime.enable failed (non-fatal): ${String(err)}`);
+    });
     const evaluated = (await send("Runtime.evaluate", {
       expression: opts.expression,
       awaitPromise: Boolean(opts.awaitPromise),
@@ -285,7 +288,9 @@ export async function snapshotAria(opts: {
 }): Promise<{ nodes: AriaSnapshotNode[] }> {
   const limit = Math.max(1, Math.min(2000, Math.floor(opts.limit ?? 500)));
   return await withCdpSocket(opts.wsUrl, async (send) => {
-    await send("Accessibility.enable").catch(() => {});
+    await send("Accessibility.enable").catch((err) => {
+      logWarn(`CDP Accessibility.enable failed (non-fatal): ${String(err)}`);
+    });
     const res = (await send("Accessibility.getFullAXTree")) as {
       nodes?: RawAXNode[];
     };
