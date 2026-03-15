@@ -205,7 +205,7 @@ async function createRealSession(profileName: string): Promise<ChromeMcpSession>
       });
       throw new BrowserProfileUnavailableError(
         `Chrome MCP existing-session attach failed for profile "${profileName}". ` +
-          `Make sure Chrome is running, enable chrome://inspect/#remote-debugging, and approve the connection. ` +
+          `Make sure Chrome (v146+) is running, enable chrome://inspect/#remote-debugging, and approve the connection. ` +
           `Details: ${sanitizeErrorMessage(err)}`,
       );
     }
