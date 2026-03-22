@@ -314,8 +314,7 @@ export async function tryDispatchAcpReply(params: {
     await projector.flush(true);
     const ttsMode = resolveTtsConfig(params.cfg).mode ?? "final";
     const accumulatedBlockText = delivery.getAccumulatedBlockText();
-    const routedCounts = delivery.getRoutedCounts();
-    const blockCount = delivery.getBlockCount();
+    const successfulDeliveryCount = delivery.getSuccessfulDeliveryCount();
     // Attempt final TTS synthesis for ttsMode="final" (independent of delivery status).
     // This ensures routed ACP flows still get final audio even after block delivery.
     let ttsSucceeded = false;
@@ -349,14 +348,9 @@ export async function tryDispatchAcpReply(params: {
       }
     }
     // Only attempt text fallback if no delivery has happened yet.
-    // For routed flows, check routedCounts (block or final) to detect prior successful delivery.
-    // For non-routed flows, we cannot reliably detect delivery success (blockCount increments
-    // before send), so we skip the fallback guard to allow recovery when block delivery fails.
+    // getSuccessfulDeliveryCount() tracks successful deliveries for both routed and non-routed flows.
     // Skip fallback for ttsMode="all" because blocks were already processed with TTS.
-    const shouldSkipTextFallback =
-      ttsMode === "all" ||
-      ttsSucceeded ||
-      (params.shouldRouteToOriginating && (routedCounts.block > 0 || routedCounts.final > 0));
+    const shouldSkipTextFallback = ttsMode === "all" || ttsSucceeded || successfulDeliveryCount > 0;
     if (!shouldSkipTextFallback && accumulatedBlockText.trim()) {
       // Fallback to text-only delivery (no TTS).
       // For routed flows, use delivery.deliver with skipTts to bypass TTS re-entry.

@@ -27,6 +27,7 @@ type AcpDispatchDeliveryState = {
   accumulatedBlockText: string;
   blockCount: number;
   routedCounts: Record<ReplyDispatchKind, number>;
+  nonRoutedSuccessfulDeliveries: number;
   toolMessageByCallId: Map<string, ToolMessageHandle>;
 };
 
@@ -40,6 +41,7 @@ export type AcpDispatchDeliveryCoordinator = {
   getBlockCount: () => number;
   getAccumulatedBlockText: () => string;
   getRoutedCounts: () => Record<ReplyDispatchKind, number>;
+  getSuccessfulDeliveryCount: () => number;
   applyRoutedCounts: (counts: Record<ReplyDispatchKind, number>) => void;
 };
 
@@ -64,6 +66,7 @@ export function createAcpDispatchDeliveryCoordinator(params: {
       block: 0,
       final: 0,
     },
+    nonRoutedSuccessfulDeliveries: 0,
     toolMessageByCallId: new Map(),
   };
 
@@ -181,12 +184,24 @@ export function createAcpDispatchDeliveryCoordinator(params: {
     }
 
     if (kind === "tool") {
-      return params.dispatcher.sendToolResult(ttsPayload);
+      const sent = params.dispatcher.sendToolResult(ttsPayload);
+      if (sent) {
+        state.nonRoutedSuccessfulDeliveries += 1;
+      }
+      return sent;
     }
     if (kind === "block") {
-      return params.dispatcher.sendBlockReply(ttsPayload);
+      const sent = params.dispatcher.sendBlockReply(ttsPayload);
+      if (sent) {
+        state.nonRoutedSuccessfulDeliveries += 1;
+      }
+      return sent;
     }
-    return params.dispatcher.sendFinalReply(ttsPayload);
+    const sent = params.dispatcher.sendFinalReply(ttsPayload);
+    if (sent) {
+      state.nonRoutedSuccessfulDeliveries += 1;
+    }
+    return sent;
   };
 
   return {
@@ -195,6 +210,10 @@ export function createAcpDispatchDeliveryCoordinator(params: {
     getBlockCount: () => state.blockCount,
     getAccumulatedBlockText: () => state.accumulatedBlockText,
     getRoutedCounts: () => ({ ...state.routedCounts }),
+    getSuccessfulDeliveryCount: () =>
+      params.shouldRouteToOriginating
+        ? state.routedCounts.block + state.routedCounts.final
+        : state.nonRoutedSuccessfulDeliveries,
     applyRoutedCounts: (counts) => {
       counts.tool += state.routedCounts.tool;
       counts.block += state.routedCounts.block;
