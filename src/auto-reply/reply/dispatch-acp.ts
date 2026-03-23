@@ -317,11 +317,10 @@ export async function tryDispatchAcpReply(params: {
     const ttsMode = resolveTtsConfig(params.cfg).mode ?? "final";
     const accumulatedBlockText = delivery.getAccumulatedBlockText();
     const routedCounts = delivery.getRoutedCounts();
-    const blockCount = delivery.getBlockCount();
     // Attempt final TTS synthesis for ttsMode="final" (independent of delivery status).
     // This ensures routed ACP flows still get final audio even after block delivery.
     let ttsSucceeded = false;
-    if (ttsMode === "final" && ttsMode !== "all") {
+    if (ttsMode === "final") {
       try {
         const ttsSyntheticReply = await maybeApplyTtsToPayload({
           payload: { text: accumulatedBlockText },
