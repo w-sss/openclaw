@@ -14,7 +14,9 @@ import { BrowserProfileUnavailableError, BrowserTabNotFoundError } from "./error
  * Strips non-printable characters and truncates to reasonable length.
  */
 function sanitizeErrorMessage(err: unknown, maxLen = 200): string {
-  const str = String(err).replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+  // Strip non-printable characters (control chars, DEL, etc.)
+  let str = String(err);
+  str = str.replace(/\p{C}/gu, "");
   return str.length > maxLen ? `${str.slice(0, maxLen)}...` : str;
 }
 
@@ -415,7 +417,9 @@ export async function closeChromeMcpSession(profileName: string): Promise<boolea
   }
   sessions.delete(profileName);
   await session.client.close().catch((err) => {
-    logWarn(`chrome-mcp: session close failed for "${profileName}" (non-fatal): ${sanitizeErrorMessage(err)}`);
+    logWarn(
+      `chrome-mcp: session close failed for "${profileName}" (non-fatal): ${sanitizeErrorMessage(err)}`,
+    );
   });
   return true;
 >>>>>>> b1b7fd948f (fix(browser): add logging for silent CDP/MCP errors)
@@ -425,7 +429,9 @@ export async function stopAllChromeMcpSessions(): Promise<void> {
   const names = [...new Set([...sessions.keys()].map((key) => JSON.parse(key)[0] as string))];
   for (const name of names) {
     await closeChromeMcpSession(name).catch((err) => {
-      logWarn(`chrome-mcp: stop session failed for "${name}" (non-fatal): ${sanitizeErrorMessage(err)}`);
+      logWarn(
+        `chrome-mcp: stop session failed for "${name}" (non-fatal): ${sanitizeErrorMessage(err)}`,
+      );
     });
   }
 }
