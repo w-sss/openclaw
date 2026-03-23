@@ -1,5 +1,5 @@
-import { logWarn } from "../logger.js";
 import type { SsrFPolicy } from "../infra/net/ssrf.js";
+import { logWarn } from "../logger.js";
 import {
   appendCdpPath,
   fetchJson,
@@ -22,7 +22,7 @@ export {
  * Strips non-printable characters and truncates to reasonable length.
  */
 function sanitizeErrorMessage(err: unknown, maxLen = 200): string {
-  const str = String(err).replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+  const str = String(err).replace(/\p{C}/gu, "");
   return str.length > maxLen ? `${str.slice(0, maxLen)}...` : str;
 }
 
