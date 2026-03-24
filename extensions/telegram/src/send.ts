@@ -509,11 +509,11 @@ function wrapTelegramChatNotFoundError(err: unknown, params: { chatId: string; i
   const errorMsg = formatErrorMessage(err);
 
   // Check for 403 "bot is not a member" or "bot was blocked" errors
-  if (/403.*(bot.*not.*member|bot.*blocked)/i.test(errorMsg)) {
+  if (/403.*(bot.*not.*member|bot.*blocked|bot.*kicked)/i.test(errorMsg)) {
     return new Error(
       [
-        `Telegram send failed: bot is not a member of the chat or was blocked (chat_id=${params.chatId}).`,
-        "Fix: Add the bot to the channel/group, or ensure it has not been removed/blocked by the user.",
+        `Telegram send failed: bot is not a member of the chat, was blocked, or was kicked (chat_id=${params.chatId}).`,
+        "Fix: Add the bot to the channel/group, or ensure it has not been removed/blocked/kicked by the user.",
         `Input was: ${JSON.stringify(params.input)}.`,
       ].join(" "),
     );
