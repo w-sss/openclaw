@@ -4,9 +4,21 @@ import os from "node:os";
 import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { logWarn } from "../logger.js";
 import type { ChromeMcpSnapshotNode } from "./chrome-mcp.snapshot.js";
 import type { BrowserTab } from "./client.js";
 import { BrowserProfileUnavailableError, BrowserTabNotFoundError } from "./errors.js";
+
+/**
+ * Sanitize error messages to prevent control character injection in logs.
+ * Strips non-printable characters and truncates to reasonable length.
+ */
+function sanitizeErrorMessage(err: unknown, maxLen = 200): string {
+  // Strip non-printable characters (control chars, DEL, etc.)
+  let str = String(err);
+  str = str.replace(/\p{C}/gu, "");
+  return str.length > maxLen ? `${str.slice(0, maxLen)}...` : str;
+}
 
 type ChromeMcpStructuredPage = {
   id: number;
@@ -245,14 +257,25 @@ async function createRealSession(
         throw new Error("Chrome MCP server did not expose the expected navigation tools.");
       }
     } catch (err) {
+<<<<<<< HEAD
       await client.close().catch(() => {});
       const targetLabel = userDataDir
         ? `the configured Chromium user data dir (${userDataDir})`
         : "Google Chrome's default profile";
+=======
+      await client.close().catch((closeErr) => {
+        logWarn(`chrome-mcp: client close failed (non-fatal): ${sanitizeErrorMessage(closeErr)}`);
+      });
+>>>>>>> b1b7fd948f (fix(browser): add logging for silent CDP/MCP errors)
       throw new BrowserProfileUnavailableError(
         `Chrome MCP existing-session attach failed for profile "${profileName}". ` +
+<<<<<<< HEAD
           `Make sure ${targetLabel} is running locally with remote debugging enabled. ` +
           `Details: ${String(err)}`,
+=======
+          `Make sure Chrome is running, enable chrome://inspect/#remote-debugging, and approve the connection. ` +
+          `Details: ${sanitizeErrorMessage(err)}`,
+>>>>>>> 6f4ee34a68 (fix(browser): align log format with subsystem prefix convention)
       );
     }
   })();
@@ -323,8 +346,15 @@ async function callTool(
     })) as ChromeMcpToolResult;
   } catch (err) {
     // Transport/connection error — tear down session so it reconnects on next call
+<<<<<<< HEAD
     sessions.delete(cacheKey);
     await session.client.close().catch(() => {});
+=======
+    sessions.delete(profileName);
+    await session.client.close().catch((closeErr) => {
+      logWarn(`chrome-mcp: client close failed (non-fatal): ${sanitizeErrorMessage(closeErr)}`);
+    });
+>>>>>>> b1b7fd948f (fix(browser): add logging for silent CDP/MCP errors)
     throw err;
   }
   // Tool-level errors (element not found, script error, etc.) don't indicate a
@@ -341,7 +371,9 @@ async function withTempFile<T>(fn: (filePath: string) => Promise<T>): Promise<T>
   try {
     return await fn(filePath);
   } finally {
-    await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
+    await fs.rm(dir, { recursive: true, force: true }).catch((err) => {
+      logWarn(`chrome-mcp: temp dir cleanup failed (non-fatal): ${sanitizeErrorMessage(err)}`);
+    });
   }
 }
 
@@ -375,13 +407,32 @@ export function getChromeMcpPid(profileName: string): number | null {
 }
 
 export async function closeChromeMcpSession(profileName: string): Promise<boolean> {
+<<<<<<< HEAD
   return await closeChromeMcpSessionsForProfile(profileName);
+=======
+  pendingSessions.delete(profileName);
+  const session = sessions.get(profileName);
+  if (!session) {
+    return false;
+  }
+  sessions.delete(profileName);
+  await session.client.close().catch((err) => {
+    logWarn(
+      `chrome-mcp: session close failed for "${profileName}" (non-fatal): ${sanitizeErrorMessage(err)}`,
+    );
+  });
+  return true;
+>>>>>>> b1b7fd948f (fix(browser): add logging for silent CDP/MCP errors)
 }
 
 export async function stopAllChromeMcpSessions(): Promise<void> {
   const names = [...new Set([...sessions.keys()].map((key) => JSON.parse(key)[0] as string))];
   for (const name of names) {
-    await closeChromeMcpSession(name).catch(() => {});
+    await closeChromeMcpSession(name).catch((err) => {
+      logWarn(
+        `chrome-mcp: stop session failed for "${name}" (non-fatal): ${sanitizeErrorMessage(err)}`,
+      );
+    });
   }
 }
 
