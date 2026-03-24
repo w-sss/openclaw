@@ -116,8 +116,22 @@ export function normalizeCliModel(modelId: string, backend: CliBackendConfig): s
 function toUsage(raw: Record<string, unknown>): CliUsage | undefined {
   const pick = (key: string) =>
     typeof raw[key] === "number" && raw[key] > 0 ? raw[key] : undefined;
-  const input = pick("input_tokens") ?? pick("inputTokens");
-  const output = pick("output_tokens") ?? pick("outputTokens");
+  // Support multiple field name formats for different providers:
+  // - OpenAI/vLLM/HuggingFace: input_tokens, output_tokens
+  // - llama.cpp server: prompt_tokens, completion_tokens
+  // - Ollama: prompt_eval_count, eval_count
+  const input =
+    pick("input_tokens") ??
+    pick("inputTokens") ??
+    pick("prompt_tokens") ??
+    pick("promptTokens") ??
+    pick("prompt_eval_count");
+  const output =
+    pick("output_tokens") ??
+    pick("outputTokens") ??
+    pick("completion_tokens") ??
+    pick("completionTokens") ??
+    pick("eval_count");
   const cacheRead =
     pick("cache_read_input_tokens") ?? pick("cached_input_tokens") ?? pick("cacheRead");
   const cacheWrite = pick("cache_write_input_tokens") ?? pick("cacheWrite");
