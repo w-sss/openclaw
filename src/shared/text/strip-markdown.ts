@@ -9,7 +9,10 @@ export function stripMarkdown(text: string): string {
   result = result.replace(/__(.+?)__/g, "$1");
 
   result = result.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "$1");
-  result = result.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, "$1");
+  result = result.replace(
+    /(?<=\s|^|[("'\[{<\/])_(?!_)(.+?)(?<!_)_(?=\s|$|[.,;:!?"')\]}\/>])/g,
+    "$1",
+  );
 
   result = result.replace(/~~(.+?)~~/g, "$1");
   result = result.replace(/^#{1,6}\s+(.+)$/gm, "$1");
