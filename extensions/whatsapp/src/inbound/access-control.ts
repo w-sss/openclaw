@@ -148,7 +148,9 @@ export async function checkInboundAccessControl(params: {
 
   // DM access control (secure defaults): "pairing" (default) / "allowlist" / "open" / "disabled".
   if (!params.group) {
-    if (params.isFromMe && !isSamePhone) {
+    // Filter outbound messages (fromMe) to prevent echo loop in self-chat mode.
+    // This applies to both same-phone (self-chat) and different-phone (paired) scenarios.
+    if (params.isFromMe) {
       logVerbose("Skipping outbound DM (fromMe); no pairing reply needed.");
       return {
         allowed: false,
