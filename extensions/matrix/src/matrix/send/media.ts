@@ -1,15 +1,5 @@
 import type { IFileInfo } from "music-metadata";
 import { getMatrixRuntime } from "../../runtime.js";
-
-// Lazy import music-metadata to avoid ESM/CJS compatibility issues
-let _parseBuffer: typeof import("music-metadata").parseBuffer | undefined;
-async function getParseBuffer() {
-  if (!_parseBuffer) {
-    const musicMetadata = await import("music-metadata");
-    _parseBuffer = musicMetadata.parseBuffer;
-  }
-  return _parseBuffer;
-}
 import type {
   DimensionalFileInfo,
   EncryptedFile,
@@ -26,6 +16,16 @@ import {
   type MatrixRelation,
   type MediaKind,
 } from "./types.js";
+
+// Lazy import music-metadata to avoid ESM/CJS compatibility issues
+let _parseBuffer: typeof import("music-metadata").parseBuffer | undefined;
+async function getParseBuffer() {
+  if (!_parseBuffer) {
+    const musicMetadata = await import("music-metadata");
+    _parseBuffer = musicMetadata.parseBuffer;
+  }
+  return _parseBuffer;
+}
 
 const getCore = () => getMatrixRuntime();
 
@@ -196,14 +196,9 @@ export async function resolveMediaDurationMs(params: {
     if (typeof durationSeconds === "number" && Number.isFinite(durationSeconds)) {
       return Math.max(0, Math.round(durationSeconds * 1000));
     }
-  } catch (err) {
+  } catch {
     // Duration is optional; ignore parse failures.
     // This can happen with music-metadata in ESM environments due to __dirname issues.
-    const errMsg = err instanceof Error ? err.message : String(err);
-    if (errMsg.includes("__dirname")) {
-      // ESM/CJS compatibility issue - skip duration extraction
-      return undefined;
-    }
   }
   return undefined;
 }
