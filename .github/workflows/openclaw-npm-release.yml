@@ -83,6 +83,9 @@ jobs:
 
           echo "Publishing openclaw@${PACKAGE_VERSION}"
 
+      - name: Install dependencies (triggers postinstall for platform binaries)
+        run: pnpm install --frozen-lockfile
+
       - name: Check
         run: pnpm check
 
@@ -141,6 +144,9 @@ jobs:
           pnpm-version: ${{ env.PNPM_VERSION }}
           install-bun: "false"
           use-sticky-disk: "false"
+
+      - name: Install dependencies (triggers postinstall for platform binaries)
+        run: pnpm install --frozen-lockfile
 
       - name: Validate release tag and package metadata
         env:
