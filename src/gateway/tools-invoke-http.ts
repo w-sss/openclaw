@@ -205,7 +205,7 @@ export async function handleToolsInvokeHttpRequest(
       : {};
 
   // Log args for debugging #54975
-  if (!args || Object.keys(args).length === 0) {
+  if (Object.keys(args).length === 0) {
     logWarn(`tools-invoke: empty args for tool=${toolName} bodyKeys=${Object.keys(body).join(",")}`);
   }
 
