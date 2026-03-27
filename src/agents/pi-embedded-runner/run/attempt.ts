@@ -876,6 +876,15 @@ export async function runEmbeddedAttempt(
         activeSession.agent.streamFn = streamSimple;
       }
 
+      // Once we override the SDK-wrapped streamFn, pi-agent-core still needs a per-provider
+      // auth lookup callback so provider stream functions receive runtime credentials.
+      const agentWithDynamicAuth = activeSession.agent as typeof activeSession.agent & {
+        getApiKey?: (provider: string) => Promise<string | undefined>;
+      };
+      if (!agentWithDynamicAuth.getApiKey) {
+        agentWithDynamicAuth.getApiKey = (provider: string) => params.authStorage.getApiKey(provider);
+      }
+
       const { effectiveExtraParams } = applyExtraParamsToAgent(
         activeSession.agent,
         params.config,
