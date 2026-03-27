@@ -65,10 +65,10 @@ export async function loadInternalHooks(
     bundledHooksDir?: string;
   },
 ): Promise<number> {
-  // Check if hooks are enabled
-  if (!cfg.hooks?.internal?.enabled) {
-    return 0;
-  }
+  // Bundled hooks (openclaw-bundled) are always loaded by default.
+  // Workspace/managed hooks require explicit opt-in via hooks.internal.enabled.
+  const hooksEnabled = cfg.hooks?.internal?.enabled === true;
+  const loadBundledOnly = cfg.hooks?.internal?.enabled === undefined;
 
   let loadedCount = 0;
 
@@ -80,8 +80,13 @@ export async function loadInternalHooks(
       bundledHooksDir: opts?.bundledHooksDir,
     });
 
-    // Filter by eligibility
-    const eligible = hookEntries.filter((entry) => shouldIncludeHook({ entry, config: cfg }));
+    // Filter by eligibility: bundled hooks always eligible, others require explicit enable
+    const eligible = hookEntries.filter((entry) => {
+      if (entry.hook.source === "openclaw-bundled") {
+        return true; // Bundled hooks always load
+      }
+      return hooksEnabled && shouldIncludeHook({ entry, config: cfg });
+    });
 
     for (const entry of eligible) {
       try {
