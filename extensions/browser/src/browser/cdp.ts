@@ -1,5 +1,6 @@
 import type { SsrFPolicy } from "../infra/net/ssrf.js";
 import { logWarn } from "../logger.js";
+import { sanitizeErrorMessage } from "./browser-utils.js";
 import {
   appendCdpPath,
   fetchJson,
@@ -8,7 +9,6 @@ import {
   withCdpSocket,
 } from "./cdp.helpers.js";
 import { assertBrowserNavigationAllowed, withBrowserNavigationPolicy } from "./navigation-guard.js";
-import { sanitizeErrorMessage } from "./browser-utils.js";
 
 export {
   appendCdpPath,
