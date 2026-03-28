@@ -76,7 +76,11 @@ export function resolveCronDeliveryPlan(job: CronJob): CronDeliveryPlan {
     (delivery as { accountId?: unknown } | undefined)?.accountId,
   );
   if (hasDelivery) {
-    const resolvedMode = mode ?? "announce";
+    // When mode is not explicitly set, default to "none" to avoid attempting
+    // channel resolution when no delivery was configured. This prevents
+    // "Channel is required (no configured channels detected)" errors for cron
+    // jobs created without explicit delivery settings.
+    const resolvedMode = mode ?? "none";
     return {
       mode: resolvedMode,
       channel: resolvedMode === "announce" ? channel : undefined,
