@@ -55,7 +55,7 @@ describe("resolveCronDeliveryPlan", () => {
     expect(plan.to).toBe("telegram:123");
   });
 
-  it("treats missing delivery field as mode=none for UI-created jobs without explicit delivery (#56078)", () => {
+  it("takes legacy code path and returns channel: 'last' when delivery is undefined (#56078)", () => {
     // When delivery field is omitted (legacy/edge case), the function takes
     // the legacy code path which returns channel: "last" as a fallback.
     // Note: After the UI fix, new jobs created via UI send { mode: "none" }
