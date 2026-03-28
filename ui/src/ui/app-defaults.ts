@@ -34,7 +34,9 @@ export const DEFAULT_CRON_FORM: CronFormState = {
   payloadModel: "",
   payloadThinking: "",
   payloadLightContext: false,
-  deliveryMode: "announce",
+  // Default to "none" to avoid channel resolution errors when no channels
+  // are configured. Users must explicitly enable delivery to use it.
+  deliveryMode: "none",
   deliveryChannel: "last",
   deliveryTo: "",
   deliveryAccountId: "",

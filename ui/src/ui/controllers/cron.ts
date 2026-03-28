@@ -659,22 +659,26 @@ export async function addCronJob(state: CronState) {
       }
     }
     const selectedDeliveryMode = form.deliveryMode;
+    // Only include delivery config when explicitly set by the user.
+    // When deliveryMode is empty/undefined, omit delivery entirely to avoid
+    // unwanted channel resolution errors when no channels are configured.
     const delivery =
-      selectedDeliveryMode && selectedDeliveryMode !== "none"
+      selectedDeliveryMode === "announce"
         ? {
             mode: selectedDeliveryMode,
-            channel:
-              selectedDeliveryMode === "announce"
-                ? form.deliveryChannel.trim() || "last"
-                : undefined,
+            channel: form.deliveryChannel.trim() || "last",
             to: form.deliveryTo.trim() || undefined,
-            accountId:
-              selectedDeliveryMode === "announce" ? form.deliveryAccountId.trim() : undefined,
+            accountId: form.deliveryAccountId.trim() || undefined,
             bestEffort: form.deliveryBestEffort,
           }
-        : selectedDeliveryMode === "none"
-          ? ({ mode: "none" } as const)
-          : undefined;
+        : selectedDeliveryMode === "webhook"
+          ? {
+              mode: selectedDeliveryMode,
+              to: form.deliveryTo.trim() || undefined,
+            }
+          : selectedDeliveryMode === "none"
+            ? ({ mode: "none" } as const)
+            : undefined;
     const failureAlert = buildFailureAlert(form);
     const agentId = form.clearAgent ? null : form.agentId.trim();
     const sessionKeyRaw = form.sessionKey.trim();
