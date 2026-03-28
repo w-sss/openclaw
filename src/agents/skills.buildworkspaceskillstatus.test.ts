@@ -93,7 +93,7 @@ describe("buildWorkspaceSkillStatus", () => {
   it("marks bundled skills blocked by allowlist", async () => {
     const entry = makeEntry({
       name: "peekaboo",
-      source: "openclaw-bundled",
+      sourceInfo: { path: "/tmp", source: "openclaw-bundled", scope: "project" as const, origin: "top-level" as const },
     });
 
     const report = buildWorkspaceSkillStatus("/tmp/ws", {
