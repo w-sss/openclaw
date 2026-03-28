@@ -5,7 +5,7 @@ import {
   startWhatsAppLogin,
   waitWhatsAppLogin,
 } from "./controllers/channels.ts";
-import { loadConfig } from "./controllers/config.ts";
+import { loadConfig, saveConfig } from "./controllers/config.ts";
 import type { NostrProfile } from "./types.ts";
 import { createNostrProfileFormState } from "./views/channels.nostr-profile-form.ts";
 
@@ -25,6 +25,7 @@ export async function handleWhatsAppLogout(host: OpenClawApp) {
 }
 
 export async function handleChannelConfigSave(host: OpenClawApp) {
+  await saveConfig(host);
   const saveError = host.lastError;
   await loadConfig(host);
   await loadChannels(host, true);
