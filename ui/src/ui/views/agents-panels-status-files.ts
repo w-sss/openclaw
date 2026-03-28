@@ -158,81 +158,67 @@ export function renderAgentChannels(params: {
             ${params.loading ? "Refreshing…" : "Refresh"}
           </button>
         </div>
-        <div class="muted" style="margin-top: 8px;">
-          Last refresh: ${lastSuccessLabel}
-        </div>
-        ${
-          params.error
-            ? html`<div class="callout danger" style="margin-top: 12px;">${params.error}</div>`
-            : nothing
-        }
-        ${
-          !params.snapshot
-            ? html`
-                <div class="callout info" style="margin-top: 12px">Load channels to see live status.</div>
-              `
-            : nothing
-        }
-        ${
-          entries.length === 0
-            ? html`
-                <div class="muted" style="margin-top: 16px">No channels found.</div>
-              `
-            : html`
-                <div class="list" style="margin-top: 16px;">
-                  ${entries.map((entry) => {
-                    const summary = summarizeChannelAccounts(entry.accounts);
-                    const status = summary.total
-                      ? `${summary.connected}/${summary.total} connected`
-                      : "no accounts";
-                    const configLabel = summary.configured
-                      ? `${summary.configured} configured`
-                      : "not configured";
-                    const enabled = summary.total ? `${summary.enabled} enabled` : "disabled";
-                    const extras = resolveChannelExtrasFromConfig({
-                      configForm: params.configForm,
-                      channelId: entry.id,
-                      fields: CHANNEL_EXTRA_FIELDS,
-                    });
-                    return html`
-                      <div class="list-item">
-                        <div class="list-main">
-                          <div class="list-title">${entry.label}</div>
-                          <div class="list-sub mono">${entry.id}</div>
-                        </div>
-                        <div class="list-meta">
-                          <div>${status}</div>
-                          <div>${configLabel}</div>
-                          <div>${enabled}</div>
-                          ${
-                            summary.configured === 0
-                              ? html`
-                                  <div>
-                                    <a
-                                      href="https://docs.openclaw.ai/channels"
-                                      target="_blank"
-                                      rel="noopener"
-                                      style="color: var(--accent); font-size: 12px"
-                                      >Setup guide</a
-                                    >
-                                  </div>
-                                `
-                              : nothing
-                          }
-                          ${
-                            extras.length > 0
-                              ? extras.map(
-                                  (extra) => html`<div>${extra.label}: ${extra.value}</div>`,
-                                )
-                              : nothing
-                          }
-                        </div>
+        <div class="muted" style="margin-top: 8px;">Last refresh: ${lastSuccessLabel}</div>
+        ${params.error
+          ? html`<div class="callout danger" style="margin-top: 12px;">${params.error}</div>`
+          : nothing}
+        ${!params.snapshot
+          ? html`
+              <div class="callout info" style="margin-top: 12px">
+                Load channels to see live status.
+              </div>
+            `
+          : nothing}
+        ${entries.length === 0
+          ? html` <div class="muted" style="margin-top: 16px">No channels found.</div> `
+          : html`
+              <div class="list" style="margin-top: 16px;">
+                ${entries.map((entry) => {
+                  const summary = summarizeChannelAccounts(entry.accounts);
+                  const status = summary.total
+                    ? `${summary.connected}/${summary.total} connected`
+                    : "no accounts";
+                  const configLabel = summary.configured
+                    ? `${summary.configured} configured`
+                    : "not configured";
+                  const enabled = summary.total ? `${summary.enabled} enabled` : "disabled";
+                  const extras = resolveChannelExtrasFromConfig({
+                    configForm: params.configForm,
+                    channelId: entry.id,
+                    fields: CHANNEL_EXTRA_FIELDS,
+                  });
+                  return html`
+                    <div class="list-item">
+                      <div class="list-main">
+                        <div class="list-title">${entry.label}</div>
+                        <div class="list-sub mono">${entry.id}</div>
                       </div>
-                    `;
-                  })}
-                </div>
-              `
-        }
+                      <div class="list-meta">
+                        <div>${status}</div>
+                        <div>${configLabel}</div>
+                        <div>${enabled}</div>
+                        ${summary.configured === 0
+                          ? html`
+                              <div>
+                                <a
+                                  href="https://docs.openclaw.ai/channels"
+                                  target="_blank"
+                                  rel="noopener"
+                                  style="color: var(--accent); font-size: 12px"
+                                  >Setup guide</a
+                                >
+                              </div>
+                            `
+                          : nothing}
+                        ${extras.length > 0
+                          ? extras.map((extra) => html`<div>${extra.label}: ${extra.value}</div>`)
+                          : nothing}
+                      </div>
+                    </div>
+                  `;
+                })}
+              </div>
+            `}
       </section>
     </section>
   `;
@@ -278,57 +264,51 @@ export function renderAgentCron(params: {
             <div class="stat-value">${formatNextRun(params.status?.nextWakeAtMs ?? null)}</div>
           </div>
         </div>
-        ${
-          params.error
-            ? html`<div class="callout danger" style="margin-top: 12px;">${params.error}</div>`
-            : nothing
-        }
+        ${params.error
+          ? html`<div class="callout danger" style="margin-top: 12px;">${params.error}</div>`
+          : nothing}
       </section>
     </section>
     <section class="card">
       <div class="card-title">Agent Cron Jobs</div>
       <div class="card-sub">Scheduled jobs targeting this agent.</div>
-      ${
-        jobs.length === 0
-          ? html`
-              <div class="muted" style="margin-top: 16px">No jobs assigned.</div>
-            `
-          : html`
-              <div class="list" style="margin-top: 16px;">
-                ${jobs.map(
-                  (job) => html`
-                    <div class="list-item">
-                      <div class="list-main">
-                        <div class="list-title">${job.name}</div>
-                        ${
-                          job.description
-                            ? html`<div class="list-sub">${job.description}</div>`
-                            : nothing
-                        }
-                        <div class="chip-row" style="margin-top: 6px;">
-                          <span class="chip">${formatCronSchedule(job)}</span>
-                          <span class="chip ${job.enabled ? "chip-ok" : "chip-warn"}">
-                            ${job.enabled ? "enabled" : "disabled"}
-                          </span>
-                          <span class="chip">${job.sessionTarget}</span>
-                        </div>
-                      </div>
-                      <div class="list-meta">
-                        <div class="mono">${formatCronState(job)}</div>
-                        <div class="muted">${formatCronPayload(job)}</div>
-                        <button
-                          class="btn btn--sm"
-                          style="margin-top: 6px;"
-                          ?disabled=${!job.enabled}
-                          @click=${() => params.onRunNow(job.id)}
-                        >Run Now</button>
+      ${jobs.length === 0
+        ? html` <div class="muted" style="margin-top: 16px">No jobs assigned.</div> `
+        : html`
+            <div class="list" style="margin-top: 16px;">
+              ${jobs.map(
+                (job) => html`
+                  <div class="list-item">
+                    <div class="list-main">
+                      <div class="list-title">${job.name}</div>
+                      ${job.description
+                        ? html`<div class="list-sub">${job.description}</div>`
+                        : nothing}
+                      <div class="chip-row" style="margin-top: 6px;">
+                        <span class="chip">${formatCronSchedule(job)}</span>
+                        <span class="chip ${job.enabled ? "chip-ok" : "chip-warn"}">
+                          ${job.enabled ? "enabled" : "disabled"}
+                        </span>
+                        <span class="chip">${job.sessionTarget}</span>
                       </div>
                     </div>
-                  `,
-                )}
-              </div>
-            `
-      }
+                    <div class="list-meta">
+                      <div class="mono">${formatCronState(job)}</div>
+                      <div class="muted">${formatCronPayload(job)}</div>
+                      <button
+                        class="btn btn--sm"
+                        style="margin-top: 6px;"
+                        ?disabled=${!job.enabled}
+                        @click=${() => params.onRunNow(job.id)}
+                      >
+                        Run Now
+                      </button>
+                    </div>
+                  </div>
+                `,
+              )}
+            </div>
+          `}
     </section>
   `;
 }
@@ -371,131 +351,119 @@ export function renderAgentFiles(params: {
           ${params.agentFilesLoading ? "Loading…" : "Refresh"}
         </button>
       </div>
-      ${
-        list
-          ? html`<div class="muted mono" style="margin-top: 8px;">Workspace: ${list.workspace}</div>`
-          : nothing
-      }
-      ${
-        params.agentFilesError
-          ? html`<div class="callout danger" style="margin-top: 12px;">${params.agentFilesError}</div>`
-          : nothing
-      }
-      ${
-        !list
-          ? html`
-              <div class="callout info" style="margin-top: 12px">
-                Load the agent workspace files to edit core instructions.
+      ${list
+        ? html`<div class="muted mono" style="margin-top: 8px;">Workspace: ${list.workspace}</div>`
+        : nothing}
+      ${params.agentFilesError
+        ? html`<div class="callout danger" style="margin-top: 12px;">
+            ${params.agentFilesError}
+          </div>`
+        : nothing}
+      ${!list
+        ? html`
+            <div class="callout info" style="margin-top: 12px">
+              Load the agent workspace files to edit core instructions.
+            </div>
+          `
+        : html`
+            <div class="agent-files-grid" style="margin-top: 16px;">
+              <div class="agent-files-list">
+                ${files.length === 0
+                  ? html` <div class="muted">No files found.</div> `
+                  : files.map((file) =>
+                      renderAgentFileRow(file, active, () => params.onSelectFile(file.name)),
+                    )}
               </div>
-            `
-          : html`
-              <div class="agent-files-grid" style="margin-top: 16px;">
-                <div class="agent-files-list">
-                  ${
-                    files.length === 0
-                      ? html`
-                          <div class="muted">No files found.</div>
-                        `
-                      : files.map((file) =>
-                          renderAgentFileRow(file, active, () => params.onSelectFile(file.name)),
-                        )
-                  }
-                </div>
-                <div class="agent-files-editor">
-                  ${
-                    !activeEntry
-                      ? html`
-                          <div class="muted">Select a file to edit.</div>
-                        `
-                      : html`
-                          <div class="agent-file-header">
-                            <div>
-                              <div class="agent-file-title mono">${activeEntry.name}</div>
-                              <div class="agent-file-sub mono">${activeEntry.path}</div>
-                            </div>
-                            <div class="agent-file-actions">
-                              <button
-                                class="btn btn--sm"
-                                title="Preview rendered markdown"
-                                @click=${(e: Event) => {
-                                  const btn = e.currentTarget as HTMLElement;
-                                  const dialog = btn
-                                    .closest(".agent-files-editor")
-                                    ?.querySelector("dialog");
-                                  if (dialog) {
-                                    dialog.showModal();
-                                  }
-                                }}
-                              >
-                                ${icons.eye} Preview
-                              </button>
-                              <button
-                                class="btn btn--sm"
-                                ?disabled=${!isDirty}
-                                @click=${() => params.onFileReset(activeEntry.name)}
-                              >
-                                Reset
-                              </button>
-                              <button
-                                class="btn btn--sm primary"
-                                ?disabled=${params.agentFileSaving || !isDirty}
-                                @click=${() => params.onFileSave(activeEntry.name)}
-                              >
-                                ${params.agentFileSaving ? "Saving…" : "Save"}
-                              </button>
-                            </div>
-                          </div>
-                          ${
-                            activeEntry.missing
-                              ? html`
-                                  <div class="callout info" style="margin-top: 10px">
-                                    This file is missing. Saving will create it in the agent workspace.
-                                  </div>
-                                `
-                              : nothing
-                          }
-                          <label class="field agent-file-field" style="margin-top: 12px;">
-                            <span>Content</span>
-                            <textarea
-                              class="agent-file-textarea"
-                              .value=${draft}
-                              @input=${(e: Event) =>
-                                params.onFileDraftChange(
-                                  activeEntry.name,
-                                  (e.target as HTMLTextAreaElement).value,
-                                )}
-                            ></textarea>
-                          </label>
-                          <dialog
-                            class="md-preview-dialog"
+              <div class="agent-files-editor">
+                ${!activeEntry
+                  ? html` <div class="muted">Select a file to edit.</div> `
+                  : html`
+                      <div class="agent-file-header">
+                        <div>
+                          <div class="agent-file-title mono">${activeEntry.name}</div>
+                          <div class="agent-file-sub mono">${activeEntry.path}</div>
+                        </div>
+                        <div class="agent-file-actions">
+                          <button
+                            class="btn btn--sm"
+                            title="Preview rendered markdown"
                             @click=${(e: Event) => {
-                              const dialog = e.currentTarget as HTMLDialogElement;
-                              if (e.target === dialog) {
-                                dialog.close();
+                              const btn = e.currentTarget as HTMLElement;
+                              const dialog = btn
+                                .closest(".agent-files-editor")
+                                ?.querySelector("dialog");
+                              if (dialog) {
+                                dialog.showModal();
                               }
                             }}
                           >
-                            <div class="md-preview-dialog__panel">
-                              <div class="md-preview-dialog__header">
-                                <div class="md-preview-dialog__title mono">${activeEntry.name}</div>
-                                <button
-                                  class="btn btn--sm"
-                                  @click=${(e: Event) => {
-                                    (e.currentTarget as HTMLElement).closest("dialog")?.close();
-                                  }}
-                                >${icons.x} Close</button>
-                              </div>
-                              <div class="md-preview-dialog__body sidebar-markdown">
-                                ${unsafeHTML(toSanitizedMarkdownHtml(draft))}
-                              </div>
+                            ${icons.eye} Preview
+                          </button>
+                          <button
+                            class="btn btn--sm"
+                            ?disabled=${!isDirty}
+                            @click=${() => params.onFileReset(activeEntry.name)}
+                          >
+                            Reset
+                          </button>
+                          <button
+                            class="btn btn--sm primary"
+                            ?disabled=${params.agentFileSaving || !isDirty}
+                            @click=${() => params.onFileSave(activeEntry.name)}
+                          >
+                            ${params.agentFileSaving ? "Saving…" : "Save"}
+                          </button>
+                        </div>
+                      </div>
+                      ${activeEntry.missing
+                        ? html`
+                            <div class="callout info" style="margin-top: 10px">
+                              This file is missing. Saving will create it in the agent workspace.
                             </div>
-                          </dialog>
-                        `
-                  }
-                </div>
+                          `
+                        : nothing}
+                      <label class="field agent-file-field" style="margin-top: 12px;">
+                        <span>Content</span>
+                        <textarea
+                          class="agent-file-textarea"
+                          .value=${draft}
+                          @input=${(e: Event) =>
+                            params.onFileDraftChange(
+                              activeEntry.name,
+                              (e.target as HTMLTextAreaElement).value,
+                            )}
+                        ></textarea>
+                      </label>
+                      <dialog
+                        class="md-preview-dialog"
+                        @click=${(e: Event) => {
+                          const dialog = e.currentTarget as HTMLDialogElement;
+                          if (e.target === dialog) {
+                            dialog.close();
+                          }
+                        }}
+                      >
+                        <div class="md-preview-dialog__panel">
+                          <div class="md-preview-dialog__header">
+                            <div class="md-preview-dialog__title mono">${activeEntry.name}</div>
+                            <button
+                              class="btn btn--sm"
+                              @click=${(e: Event) => {
+                                (e.currentTarget as HTMLElement).closest("dialog")?.close();
+                              }}
+                            >
+                              ${icons.x} Close
+                            </button>
+                          </div>
+                          <div class="md-preview-dialog__body sidebar-markdown">
+                            ${unsafeHTML(toSanitizedMarkdownHtml(draft))}
+                          </div>
+                        </div>
+                      </dialog>
+                    `}
               </div>
-            `
-      }
+            </div>
+          `}
     </section>
   `;
 }
@@ -514,13 +482,7 @@ function renderAgentFileRow(file: AgentFileEntry, active: string | null, onSelec
         <div class="agent-file-name mono">${file.name}</div>
         <div class="agent-file-meta">${status}</div>
       </div>
-      ${
-        file.missing
-          ? html`
-              <span class="agent-pill warn">missing</span>
-            `
-          : nothing
-      }
+      ${file.missing ? html` <span class="agent-pill warn">missing</span> ` : nothing}
     </button>
   `;
 }

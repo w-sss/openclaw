@@ -43,19 +43,27 @@ export function renderSkills(props: SkillsProps) {
           <div class="card-title">Skills</div>
           <div class="card-sub">Installed skills and their status.</div>
         </div>
-        <button class="btn" ?disabled=${props.loading || !props.connected} @click=${props.onRefresh}>
+        <button
+          class="btn"
+          ?disabled=${props.loading || !props.connected}
+          @click=${props.onRefresh}
+        >
           ${props.loading ? "Loading…" : "Refresh"}
         </button>
       </div>
 
-      <div class="filters" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px;">
+      <div
+        class="filters"
+        style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px;"
+      >
         <a
           class="btn"
           href="https://clawhub.com"
           target="_blank"
           rel="noreferrer"
           title="Browse skills on ClawHub"
-        >Browse Skills Store</a>
+          >Browse Skills Store</a
+        >
         <label class="field" style="flex: 1; min-width: 180px;">
           <input
             .value=${props.filter}
@@ -68,24 +76,18 @@ export function renderSkills(props: SkillsProps) {
         <div class="muted">${filtered.length} shown</div>
       </div>
 
-      ${
-        props.error
-          ? html`<div class="callout danger" style="margin-top: 12px;">${props.error}</div>`
-          : nothing
-      }
-
-      ${
-        filtered.length === 0
-          ? html`
-              <div class="muted" style="margin-top: 16px">
-                ${
-                  !props.connected && !props.report
-                    ? "Not connected to gateway."
-                    : "No skills found."
-                }
-              </div>
-            `
-          : html`
+      ${props.error
+        ? html`<div class="callout danger" style="margin-top: 12px;">${props.error}</div>`
+        : nothing}
+      ${filtered.length === 0
+        ? html`
+            <div class="muted" style="margin-top: 16px">
+              ${!props.connected && !props.report
+                ? "Not connected to gateway."
+                : "No skills found."}
+            </div>
+          `
+        : html`
             <div class="agent-skills-groups" style="margin-top: 16px;">
               ${groups.map((group) => {
                 const collapsedByDefault = group.id === "workspace" || group.id === "built-in";
@@ -102,8 +104,7 @@ export function renderSkills(props: SkillsProps) {
                 `;
               })}
             </div>
-          `
-      }
+          `}
     </section>
   `;
 }
@@ -119,29 +120,15 @@ function renderSkill(skill: SkillStatusEntry, props: SkillsProps) {
   return html`
     <div class="list-item">
       <div class="list-main">
-        <div class="list-title">
-          ${skill.emoji ? `${skill.emoji} ` : ""}${skill.name}
-        </div>
+        <div class="list-title">${skill.emoji ? `${skill.emoji} ` : ""}${skill.name}</div>
         <div class="list-sub">${clampText(skill.description, 140)}</div>
         ${renderSkillStatusChips({ skill, showBundledBadge })}
-        ${
-          missing.length > 0
-            ? html`
-              <div class="muted" style="margin-top: 6px;">
-                Missing: ${missing.join(", ")}
-              </div>
-            `
-            : nothing
-        }
-        ${
-          reasons.length > 0
-            ? html`
-              <div class="muted" style="margin-top: 6px;">
-                Reason: ${reasons.join(", ")}
-              </div>
-            `
-            : nothing
-        }
+        ${missing.length > 0
+          ? html` <div class="muted" style="margin-top: 6px;">Missing: ${missing.join(", ")}</div> `
+          : nothing}
+        ${reasons.length > 0
+          ? html` <div class="muted" style="margin-top: 6px;">Reason: ${reasons.join(", ")}</div> `
+          : nothing}
       </div>
       <div class="list-meta">
         <div class="row" style="justify-content: flex-end; flex-wrap: wrap;">
@@ -152,35 +139,28 @@ function renderSkill(skill: SkillStatusEntry, props: SkillsProps) {
           >
             ${skill.disabled ? "Enable" : "Disable"}
           </button>
-          ${
-            canInstall
-              ? html`<button
+          ${canInstall
+            ? html`<button
                 class="btn"
                 ?disabled=${busy}
                 @click=${() => props.onInstall(skill.skillKey, skill.name, skill.install[0].id)}
               >
                 ${busy ? "Installing…" : skill.install[0].label}
               </button>`
-              : nothing
-          }
+            : nothing}
         </div>
-        ${
-          message
-            ? html`<div
+        ${message
+          ? html`<div
               class="muted"
-              style="margin-top: 8px; color: ${
-                message.kind === "error"
-                  ? "var(--danger-color, #d14343)"
-                  : "var(--success-color, #0a7f5a)"
-              };"
+              style="margin-top: 8px; color: ${message.kind === "error"
+                ? "var(--danger-color, #d14343)"
+                : "var(--success-color, #0a7f5a)"};"
             >
               ${message.message}
             </div>`
-            : nothing
-        }
-        ${
-          skill.primaryEnv
-            ? html`
+          : nothing}
+        ${skill.primaryEnv
+          ? html`
               <div class="field" style="margin-top: 10px;">
                 <span>API key</span>
                 <input
@@ -199,8 +179,7 @@ function renderSkill(skill: SkillStatusEntry, props: SkillsProps) {
                 Save key
               </button>
             `
-            : nothing
-        }
+          : nothing}
       </div>
     </div>
   `;
