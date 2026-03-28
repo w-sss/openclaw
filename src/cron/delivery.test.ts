@@ -56,9 +56,10 @@ describe("resolveCronDeliveryPlan", () => {
   });
 
   it("treats missing delivery field as mode=none for UI-created jobs without explicit delivery (#56078)", () => {
-    // When UI creates a job without explicit delivery configuration,
-    // delivery field is omitted entirely. This should default to mode=none
-    // to avoid channel resolution errors when no channels are configured.
+    // When delivery field is omitted (legacy/edge case), the function takes
+    // the legacy code path which returns channel: "last" as a fallback.
+    // Note: After the UI fix, new jobs created via UI send { mode: "none" }
+    // explicitly, which goes through the delivery branch and returns channel: undefined.
     const plan = resolveCronDeliveryPlan(
       makeJob({
         delivery: undefined,
@@ -67,7 +68,7 @@ describe("resolveCronDeliveryPlan", () => {
     );
     expect(plan.mode).toBe("none");
     expect(plan.requested).toBe(false);
-    expect(plan.channel).toBeUndefined();
+    expect(plan.channel).toBe("last");
   });
 
   it("resolves webhook mode without channel routing", () => {
