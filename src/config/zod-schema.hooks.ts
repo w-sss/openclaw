@@ -52,14 +52,9 @@ export const HookMappingSchema = z
     channel: z
       .union([
         z.literal("last"),
-        z.literal("whatsapp"),
-        z.literal("telegram"),
-        z.literal("discord"),
-        z.literal("irc"),
-        z.literal("slack"),
-        z.literal("signal"),
-        z.literal("imessage"),
-        z.literal("msteams"),
+        // Allow any valid channel plugin id (including dynamically registered plugins like feishu).
+        // Runtime validation happens in delivery code paths via isDeliverableMessageChannel().
+        z.string().min(1),
       ])
       .optional(),
     to: z.string().optional(),
