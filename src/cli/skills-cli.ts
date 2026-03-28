@@ -1,5 +1,9 @@
 import type { Command } from "commander";
-import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
+import {
+  resolveAgentIdByWorkspacePath,
+  resolveAgentWorkspaceDir,
+  resolveDefaultAgentId,
+} from "../agents/agent-scope.js";
 import {
   installSkillFromClawHub,
   readTrackedClawHubSkillSlugs,
@@ -42,6 +46,14 @@ async function runSkillsAction(render: (report: SkillStatusReport) => string): P
 
 function resolveActiveWorkspaceDir(): string {
   const config = loadConfig();
+  const cwd = process.cwd();
+  // Check if current working directory is within a configured agent workspace.
+  // This allows `openclaw skills install` to work from sub-agent workspaces.
+  const agentId = resolveAgentIdByWorkspacePath(config, cwd);
+  if (agentId) {
+    return resolveAgentWorkspaceDir(config, agentId);
+  }
+  // Fall back to default agent workspace.
   return resolveAgentWorkspaceDir(config, resolveDefaultAgentId(config));
 }
 
