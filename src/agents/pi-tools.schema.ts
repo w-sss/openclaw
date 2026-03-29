@@ -50,7 +50,7 @@ function mergePropertySchemas(existing: unknown, incoming: unknown): unknown {
         continue;
       }
       const record = source as Record<string, unknown>;
-      for (const key of ["title", "description", "default"]) {
+      for (const key of ["title", "description", "default", "optional"]) {
         if (!(key in merged) && key in record) {
           merged[key] = record[key];
         }
@@ -64,7 +64,23 @@ function mergePropertySchemas(existing: unknown, incoming: unknown): unknown {
     return merged;
   }
 
-  return existing;
+  // Non-enum path: preserve optional annotation using safe own-property access
+  const ex =
+    existing && typeof existing === "object"
+      ? (existing as Record<string, unknown>)
+      : Object.create(null);
+  const inc =
+    incoming && typeof incoming === "object"
+      ? (incoming as Record<string, unknown>)
+      : Object.create(null);
+
+  const merged: Record<string, unknown> = Object.create(null);
+  const exOptional = Object.hasOwn(ex, "optional") && ex.optional === true;
+  const incOptional = Object.hasOwn(inc, "optional") && inc.optional === true;
+  if (exOptional || incOptional) {
+    merged.optional = true;
+  }
+  return merged;
 }
 
 export function normalizeToolParameters(

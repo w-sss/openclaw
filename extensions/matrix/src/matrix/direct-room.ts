@@ -106,10 +106,13 @@ export async function inspectMatrixDirectRoomEvidence(params: {
       ? trimMaybeString(params.selfUserId)
       : trimMaybeString(await params.client.getUserId().catch(() => null));
   const joinedMembers = await readJoinedMatrixMembers(params.client, params.roomId);
+  // Fetch is_direct flag from local user's membership only (do not trust remote sender)
+  const directViaSelf = await hasDirectMatrixMemberFlag(params.client, params.roomId, selfUserId);
   const strict = isStrictDirectMembership({
     selfUserId,
     remoteUserId: params.remoteUserId,
     joinedMembers,
+    isDirectFlag: directViaSelf === true ? true : null,
   });
   if (!strict) {
     return {
@@ -121,10 +124,7 @@ export async function inspectMatrixDirectRoomEvidence(params: {
   return {
     joinedMembers,
     strict,
-    viaMemberState:
-      (await hasDirectMatrixMemberFlag(params.client, params.roomId, params.remoteUserId)) ===
-        true ||
-      (await hasDirectMatrixMemberFlag(params.client, params.roomId, selfUserId)) === true,
+    viaMemberState: directViaSelf === true,
   };
 }
 

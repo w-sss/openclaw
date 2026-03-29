@@ -37,7 +37,7 @@ export function createDirectRoomTracker(client: MatrixClient, opts: DirectRoomTr
   let hasSeededDmCache = false;
   let cachedSelfUserId: string | null = null;
   const joinedMembersCache = new Map<string, { members: string[]; ts: number }>();
-  const directMemberFlagCache = new Map<string, { isDirect: boolean; ts: number }>();
+  const directMemberFlagCache = new Map<string, { isDirect: boolean | null; ts: number }>();
 
   const ensureSelfUserId = async (): Promise<string | null> => {
     if (cachedSelfUserId) {
