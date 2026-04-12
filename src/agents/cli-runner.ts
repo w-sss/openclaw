@@ -38,6 +38,12 @@ export async function runCliAgent(params: RunCliAgentParams): Promise<EmbeddedPi
     // but we apply it to the context system prompt for consistency.
     context.systemPrompt = hookResult.systemPrompt;
   }
+  if (hookResult?.prependSystemContext) {
+    context.systemPrompt = `${hookResult.prependSystemContext}\n\n${context.systemPrompt ?? ""}`;
+  }
+  if (hookResult?.appendSystemContext) {
+    context.systemPrompt = `${context.systemPrompt ?? ""}\n\n${hookResult.appendSystemContext}`;
+  }
 
   const buildCliRunResult = (resultParams: {
     output: Awaited<ReturnType<typeof executePreparedCliRun>>;
