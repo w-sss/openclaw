@@ -71,6 +71,9 @@ export function createCronPromptExecutor(params: {
     params.cronSession.sessionEntry.sessionId,
     params.agentId,
   );
+  // Persist sessionFile to session entry so it is tracked in sessions.json
+  // and not reported as orphan by openclaw doctor (fixes #65151)
+  params.cronSession.sessionEntry.sessionFile = sessionFile;
   const cronFallbacksOverride = resolveCronFallbacksOverride({
     cfg: params.cfg,
     job: params.job,
