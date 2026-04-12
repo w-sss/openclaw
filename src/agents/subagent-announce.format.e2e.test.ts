@@ -719,7 +719,7 @@ describe("subagent announce formatting", () => {
       roundOneReply: " NO_REPLY ",
     });
 
-    expect(didAnnounce).toBe(false);
+    expect(didAnnounce).toBe(true);
     expect(sendSpy).not.toHaveBeenCalled();
     expect(agentSpy).not.toHaveBeenCalled();
   });
@@ -737,9 +737,11 @@ describe("subagent announce formatting", () => {
       fallbackReply: "final summary from prior completion",
     });
 
-    expect(didAnnounce).toBe(false);
+    expect(didAnnounce).toBe(true);
     expect(sendSpy).not.toHaveBeenCalled();
-    expect(agentSpy).not.toHaveBeenCalled();
+    expect(agentSpy).toHaveBeenCalledTimes(1);
+    const call = agentSpy.mock.calls[0]?.[0] as { params?: { message?: string } };
+    expect(call?.params?.message).toContain("final summary from prior completion");
   });
 
   it("retries completion direct agent announce on transient channel-unavailable errors", async () => {
