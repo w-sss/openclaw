@@ -24,6 +24,10 @@ export type ToolCallSummary = {
   meta?: string;
   mutatingAction: boolean;
   actionFingerprint?: string;
+  /** Set when a tool:beforeExecute hook denies execution. */
+  blocked?: boolean;
+  /** Reason provided by the hook when denying execution. */
+  blockReason?: string;
 };
 
 export type EmbeddedPiSubscribeState = {

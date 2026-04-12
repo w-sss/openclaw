@@ -553,16 +553,21 @@ export function handleToolExecutionStart(
         toolCallId,
         isSubagent: ctx.params.isSubagent ?? false,
       });
-      const hookResult = await triggerInternalHook(hookEvent);
+      await triggerInternalHook(hookEvent);
 
-      // Handle permissionDecision
-      if (hookResult?.permissionDecision === "deny") {
+      // Handle permissionDecision (handler writes to event.context)
+      const permissionDecision = hookEvent.context.permissionDecision as
+        | "allow"
+        | "deny"
+        | undefined;
+      if (permissionDecision === "deny") {
+        const blockReason = hookEvent.context.systemMessage as string | undefined;
         ctx.log.warn(`tool:beforeExecute hook denied: tool=${toolName} toolCallId=${toolCallId}`);
         const meta = extendExecMeta(toolName, args, inferToolMetaFromArgs(toolName, args));
         ctx.state.toolMetaById.set(toolCallId, {
           ...buildToolCallSummary(toolName, args, meta),
           blocked: true,
-          blockReason: hookResult.systemMessage,
+          blockReason,
         });
         emitAgentEvent({
           runId: ctx.params.runId,
@@ -571,7 +576,7 @@ export function handleToolExecutionStart(
             phase: "end",
             name: toolName,
             toolCallId,
-            error: hookResult.systemMessage ?? "Blocked by hook",
+            error: blockReason ?? "Blocked by hook",
           },
         });
         return;
